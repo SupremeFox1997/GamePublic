@@ -86,7 +86,6 @@ func _on_Up_Time_pressed():
 		Global.coefficient_time += Global.pop_time
 				# Увеличиваем количество монет за клик (в примере увеличение на 1, вы также можете настроить по своему усмотрению)
 		Global.click_time += 6
-		Global.save_game()
 		Global.bonus_b()
 		# Выводим информацию об улучшении в консоль (можете убрать, если не нужно)
 		print("Улучшение произведено! Уровень:", Global.up_time, "Стоимость следующего улучшения:", Global.up_store, "Коффициент", Global.coefficient_time, "pop", Global.pop_time)
@@ -106,8 +105,6 @@ func _on_UpButton_pressed():
 		Global.coefficient += Global.pop
 				# Увеличиваем количество монет за клик (в примере увеличение на 1, вы также можете настроить по своему усмотрению)
 		Global.click += 1
-		Global.save_game()
-		print_debug("Сохранено")
 		Global.bonus_a()
 		
 		
