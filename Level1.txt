@@ -1,0 +1,227 @@
+extends Node2D
+
+
+var plant = Global.plantselected
+var skins1 = [
+	{ "name": "Skin1", "texture": preload("res://GG8.png") },
+	{ "name": "Skin2", "texture": preload("res://GG7.png") },
+	{ "name": "Skin3", "texture": preload("res://GG6.png") },
+	# Добавьте сколько угодно скинов
+]
+var currentSkinIndex = 0
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	$CanvasLayer/time2.text = str(Global.click_time)
+	$CanvasLayer/time3.text = str(Global.bonus_act)
+	$CanvasLayer/Label.text = str(Global.coins)
+	$CanvasLayer/Label2.text = str(Global.up_store)
+	$CanvasLayer/Label3.text = str(Global.up_time)
+	$CanvasLayer/time.text = str(int($TimerBonus.time_left))
+	updateCostLabel()
+	updateBuyButton()
+	
+	
+
+
+func _process(delta):
+	$CanvasLayer/time2.text = str(Global.click_time)
+	$CanvasLayer/time3.text = str(Global.bonus_act)
+	$CanvasLayer/time.text = str(int($TimerBonus.time_left))
+	$CanvasLayer/Label.text = str(Global.coins)
+	$CanvasLayer/Label2.text = str(Global.up_store)
+	$CanvasLayer/Label3.text = str(Global.up_time)
+	
+	updateCostLabel()
+	updateBuyButton()
+	progress()
+
+
+func _on_Button_pressed():
+	Global.coins += Global.click
+	
+
+
+func changeSkin(direction):
+	var totalSkins = Global.skins.size()
+	Global.currentSkinIndex += direction
+
+	if Global.currentSkinIndex < 0:
+		Global.currentSkinIndex = 0
+	elif Global.currentSkinIndex >= totalSkins:
+		Global.currentSkinIndex = totalSkins - 1
+
+	applySkin()
+
+func applySkin():
+	var selectedSkin = Global.skins[Global.currentSkinIndex]
+	$CanvasLayer/Igrushka2.texture = selectedSkin["texture"]
+
+func applySkin1():
+	var selectedSkin = Global.skins[Global.currentSkinIndex]
+	$CanvasLayer/Igrushka.texture = selectedSkin["texture"]
+	print("Скин 1 применен, индекс:", Global.currentSkinIndex)
+
+	
+func updateBuyButton():
+	if Global.currentSkinIndex > 0 and !Global.skinsPurchased[Global.currentSkinIndex]:
+		# Если скин еще не куплен, позволяйте пользователю покупать
+		$CanvasLayer/Buttons_select/Buy.text = "Buy (" + str(Global.skins[Global.currentSkinIndex]["cost"]) + " coins)"
+	else:
+		# Если скин уже куплен или это первый скин, устанавливаем кнопку в режим выбора
+		$CanvasLayer/Buttons_select/Buy.text = "Select"
+
+
+
+
+
+
+func _on_Up_Time_pressed():
+	if Global.coins >= Global.up_time:
+		# Уменьшаем количество монет на стоимость улучшения
+		Global.coins -= Global.up_time
+		# Увеличиваем стоимость следующего улучшения в соответствии с вашим рядом
+		Global.up_time = round(Global.up_time * Global.coefficient_time)
+		Global.pop_time += 0.04
+		Global.coefficient_time += Global.pop_time
+				# Увеличиваем количество монет за клик (в примере увеличение на 1, вы также можете настроить по своему усмотрению)
+		Global.click_time += 6
+		Global.save_game()
+		Global.bonus_b()
+		# Выводим информацию об улучшении в консоль (можете убрать, если не нужно)
+		print("Улучшение произведено! Уровень:", Global.up_time, "Стоимость следующего улучшения:", Global.up_store, "Коффициент", Global.coefficient_time, "pop", Global.pop_time)
+	else:
+		# Если не хватает монет, выводим сообщение в консоль (можете убрать, если не нужно)
+		print("Недостаточно монет для улучшения!")
+
+
+
+func _on_UpButton_pressed():
+	if Global.coins >= Global.up_store:
+		# Уменьшаем количество монет на стоимость улучшения
+		Global.coins -= Global.up_store
+		# Увеличиваем стоимость следующего улучшения в соответствии с вашим рядом
+		Global.up_store = round(Global.up_store * Global.coefficient)
+		Global.pop += 0.03
+		Global.coefficient += Global.pop
+				# Увеличиваем количество монет за клик (в примере увеличение на 1, вы также можете настроить по своему усмотрению)
+		Global.click += 1
+		Global.save_game()
+		print_debug("Сохранено")
+		Global.bonus_a()
+		
+		
+		# Выводим информацию об улучшении в консоль (можете убрать, если не нужно)
+		print("Улучшение произведено! Уровень:", Global.up_store, "Монет за клик:", Global.click, "Стоимость следующего улучшения:", Global.up_store, "Коффициент", Global.coefficient, "pop", Global.pop)
+	else:
+		# Если не хватает монет, выводим сообщение в консоль (можете убрать, если не нужно)
+		print("Недостаточно монет для улучшения!")
+
+
+func _on_Timer_timeout():
+	Global.coins += Global.click_time
+	$CanvasLayer/Error.hide()
+
+
+func _on_Left_pressed():
+	changeSkin(-1)
+
+func _on_Right_pressed():
+	changeSkin(1)
+
+
+func updateCostLabel():
+	var selectedSkin = Global.skins[Global.currentSkinIndex]
+	$CanvasLayer/Buttons_select/CostLabel.text = "Cost: " + str(selectedSkin["cost"])
+
+
+func _on_Buy_pressed():
+	var selectedSkin = Global.skins[Global.currentSkinIndex]
+	var cost = selectedSkin["cost"]
+
+	print("Попытка выбрать скин, index:", Global.currentSkinIndex, "стоимость:", cost)
+
+	if Global.coins >= cost:
+		Global.coins -= cost
+		applySkin1()
+		updateCostLabel()
+		updateBuyButton()
+		
+		if Global.currentSkinIndex > 0 and !Global.skinsPurchased[Global.currentSkinIndex]:
+			Global.skinsPurchased[Global.currentSkinIndex] = true
+			Global.skins[Global.currentSkinIndex]["cost"] = 0
+			print("Скин успешно выбран.")
+		else:
+			print("Скин уже куплен или это первый скин.")
+	else:
+		print("Ошибка при выборе скина. Недостаточно coins.")
+
+
+
+
+
+
+
+
+func _on_sobaka_body_entered(body):
+	if body.group == "Cookie":
+		Global.cookie -= 1
+		$CanvasLayer/TextureProgress.value += 10 
+		print("Collision with Cookie!")
+		print("Global.cookie:", Global.cookie)
+		print("TextureProgress.value:", $CanvasLayer/TextureProgress.value)
+
+
+
+func _on_cookie_body_entered(body):
+	pass # Replace with function body.
+
+
+func _on_sobaka_area_entered(area):
+	if plant == 1: 
+		if Global.cookie > 0: 
+			Global.cookie -= 1
+			$CanvasLayer/TextureProgress.value += 10
+		else:
+			print_debug("Недостаточно печенек")
+		
+
+
+func _on_BuyCookie_pressed():
+	if Global.coins > 1000:
+		Global.coins -= 1000
+		Global.cookie += 1
+	else:
+		$CanvasLayer/Error.show()
+		$CanvasLayer/Error.text = "Недостаточно денег!"
+
+
+func progress():
+	var selectedSkin = skins1[currentSkinIndex]
+
+	if $CanvasLayer/TextureProgress.value >= 100:
+		$CanvasLayer/TextureProgress.value = 0
+		currentSkinIndex = (currentSkinIndex + 1) % len(skins1)
+		$CanvasLayer/Button.icon = selectedSkin["texture"]
+
+func bonus():
+	if Global.bonus_act == true:
+		$TimerBonus.start()
+		print_debug(Global.bonus_act)
+		
+
+
+func _on_reklama_pressed():
+	Global.save_game()
+	Global.bonus_act = true
+	Global.bonus_a()
+	Global.bonus_b()
+	bonus()
+	print_debug(Global.bonus_act)
+
+
+func _on_TimerBonus_timeout():
+	Global.bonus_act = false
+	Global.bonus_a()
+	Global.bonus_b()
+	print_debug(Global.bonus_act)

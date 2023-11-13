@@ -1,0 +1,82 @@
+extends Node
+
+var skins = [
+	{ "name": "Skin1", "cost": 0, "texture": preload("res://GG8.png") },
+	{ "name": "Skin2", "cost": 100, "texture": preload("res://GG7.png") },
+	{ "name": "Skin3", "cost": 150, "texture": preload("res://GG6.png") },
+	# Добавьте сколько угодно скинов
+]
+
+var plantselected = 1
+var cookie = 10
+var currentSkinIndex = 0
+var skinsPurchased = [true, false, false]  # По умолчанию первый скин открыт
+var click_time = 1
+var pop_time = 0.14
+var coefficient_time = 1.15
+var up_time = 100
+var pop = 0.14
+var coefficient = 1.15
+var up_store = 100
+var click = 1
+var coins = 0
+var bonus_act = false
+var callback_rewarded_ad = JavaScript.create_callback(self, '_rewarded_ad')
+var callback_ad = JavaScript.create_callback(self, '_ad')
+onready var win = JavaScript.get_interface("window")
+
+
+func save_game():
+	var file = File.new()
+	file.open("user://save_game.dat", File.WRITE)
+	if file.get_error() == OK:
+		file.store_var({
+			"click": click,
+			"click_time": click_time
+		})
+		print_debug("Сохранено")
+		file.close()
+
+func load_game():
+	var file = File.new()
+	file.open("user://save_game.dat", File.READ)
+	if file.get_error() == OK:
+		var data = file.get_var()
+		click = data["click"]
+		click_time = data["click_time"]
+		file.close()
+		print_debug("Загружено")
+
+
+
+
+
+func js_show_ad():
+	win.ShowAd(callback_ad)
+
+func js_show_rewarded_ad():
+	win.ShowAdRewardedVideo(callback_rewarded_ad)
+
+func _rewarded_ad(args):
+	print(args[0])
+	bonus_act = true
+	
+func _ad(args):
+	print(args[0])
+
+func bonus_a():
+	# Проверяем, равна ли переменная bonus_act true
+	if bonus_act:
+		# Если да, активируем бонус и умножаем значения
+		click *= 2
+	else:
+		load_game()
+
+
+func bonus_b():
+	# Проверяем, равна ли переменная bonus_act true
+	if bonus_act:
+		# Если да, активируем бонус и умножаем значения
+		click_time *= 2
+	else:
+		load_game()
