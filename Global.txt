@@ -26,27 +26,6 @@ var callback_ad = JavaScript.create_callback(self, '_ad')
 onready var win = JavaScript.get_interface("window")
 
 
-func save_game():
-	var file = File.new()
-	file.open("user://save_game.dat", File.WRITE)
-	if file.get_error() == OK:
-		file.store_var({
-			"click": click,
-			"click_time": click_time
-		})
-		print_debug("Сохранено")
-		file.close()
-
-func load_game():
-	var file = File.new()
-	file.open("user://save_game.dat", File.READ)
-	if file.get_error() == OK:
-		var data = file.get_var()
-		click = data["click"]
-		click_time = data["click_time"]
-		file.close()
-		print_debug("Загружено")
-
 
 
 
@@ -70,7 +49,7 @@ func bonus_a():
 		# Если да, активируем бонус и умножаем значения
 		click *= 2
 	else:
-		load_game()
+		click /= 2
 
 
 func bonus_b():
@@ -79,4 +58,4 @@ func bonus_b():
 		# Если да, активируем бонус и умножаем значения
 		click_time *= 2
 	else:
-		load_game()
+		click_time /= 2
